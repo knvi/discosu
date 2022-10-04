@@ -32,36 +32,41 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const Bancho = __importStar(require("bancho.js"));
 const Discord = __importStar(require("discord.js"));
-const discord_js_1 = require("discord.js");
-const irc = require('./irc');
-const client = new Discord.Client({ intents: [discord_js_1.GatewayIntentBits.DirectMessages,
-        discord_js_1.GatewayIntentBits.Guilds,
-        discord_js_1.GatewayIntentBits.GuildBans,
-        discord_js_1.GatewayIntentBits.GuildMessages,
-        discord_js_1.GatewayIntentBits.MessageContent,
-    ], partials: [Discord.Partials.Channel, Discord.Partials.Message] });
-client.once("ready", () => {
-    var _a;
-    console.log(((_a = client.user) === null || _a === void 0 ? void 0 : _a.username) + " is online!");
+const client = new Bancho.BanchoClient({ username: 'Rotherex', password: '5ea97054', apiKey: "175fafdafc6f87d1cb779ece02ef04bbc35d3313" });
+client.connect();
+const linkDiscordOsu = (thread, lobby, user) => __awaiter(void 0, void 0, void 0, function* () {
+    thread.createMessageCollector({
+        filter: msg => msg.author.id === user.id,
+        dispose: true
+    }).on('collect', (msg) => __awaiter(void 0, void 0, void 0, function* () {
+        const output = Discord.cleanContent(msg.content, msg.channel)
+            .replace(/<a?(:[^: \n\r\t]+:)\d+>/g, (found, text) => text);
+        yield lobby.sendMessage(output);
+    }));
+    lobby.on('message', (msg) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
+        if (msg.self)
+            return;
+        const name = (_a = msg.user.username) !== null && _a !== void 0 ? _a : msg.user.ircUsername;
+        const content = msg.message;
+        const output = `\`${name}\`: ${content.replace(/[`*_<~|>]/g, found => '\\' + found)}`
+            .replace(/https?:\/\/[^ \n\r\t]+/g, found => `<${found}>`);
+        if (content === "!mp close")
+            thread.setArchived(true, "match closed");
+        yield thread.send({
+            content: output,
+            allowedMentions: { users: [], roles: [], repliedUser: false }
+        });
+    }));
 });
-client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!message.guild)
-        return;
-    console.log(message.content);
-    if (!message.content.startsWith("!"))
-        return console.log("Middle finger gif");
-    const args = message.content.slice('!'.length).split(/ +/);
-    const command = args.shift();
-    switch (command) {
-        case 'mpMake':
-            if (message.channel.isThread())
-                return console.log("cannot send in thread");
-            const mpName = args.join(' ');
-            if (!mpName)
-                return console.log("Missing mp name");
-            yield irc.mpMake(message, message.author, mpName).catch((err) => console.error(err));
-        default: break;
-    }
-}));
-client.login("MTAyNjgxMDI2ODYwMjM0NzY0MA.GMaosT.JYooHqDITuYswpDS5FYTmfbMgauLOEl1kMy6Mo");
+module.exports.mpMake = (msg, user, mpName) => __awaiter(void 0, void 0, void 0, function* () {
+    const mpLobby = yield client.createLobby(mpName);
+    const channel = msg.channel;
+    const thread = yield channel.threads.create({
+        name: `MATCH: ${mpLobby}`,
+        startMessage: msg
+    });
+    linkDiscordOsu(thread, mpLobby, user);
+});

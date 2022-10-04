@@ -1,6 +1,9 @@
 {
   "dependencies": {
     "@types/irc": "^0.5.1",
+    "bancho.js": "^0.9.7",
+    "discord.js": "^14.5.0",
+    "irc": "^0.5.2",
     "node-irc": "^0.0.5",
     "typescript": "^4.8.4"
   },
