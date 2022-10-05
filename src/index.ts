@@ -1,6 +1,7 @@
 import * as Discord from "discord.js"
 import { GatewayIntentBits } from "discord.js";
 const irc = require('./irc');
+import 'dotenv/config';
 
 const client = new Discord.Client({ intents: [GatewayIntentBits.DirectMessages,
     GatewayIntentBits.Guilds,
@@ -10,12 +11,13 @@ const client = new Discord.Client({ intents: [GatewayIntentBits.DirectMessages,
 ], partials: [Discord.Partials.Channel, Discord.Partials.Message]});
 
 client.once("ready", () => {
-    console.log(client.user?.username + " is online!");
+    console.log(client.user?.username + " is active on the net!");
 })
 
 client.on('messageCreate', async message => {
     if(!message.guild) return;
-    if(!message.content.startsWith("!")) return console.log("Middle finger gif");
+    if(message.author.bot) return;
+    if(!message.content.startsWith("!")) return;
     
     const args = message.content.slice('!'.length).split(/ +/);
     const command = args.shift();
@@ -30,4 +32,4 @@ client.on('messageCreate', async message => {
     }   
 })
 
-client.login("MTAyNjgxMDI2ODYwMjM0NzY0MA.GMaosT.JYooHqDITuYswpDS5FYTmfbMgauLOEl1kMy6Mo");
+client.login(process.env.DISCORD_BOT_TOKEN);

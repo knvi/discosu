@@ -3,6 +3,8 @@
     "@types/irc": "^0.5.1",
     "bancho.js": "^0.9.7",
     "discord.js": "^14.5.0",
+    "dotenv": "^16.0.3",
+    "env": "^0.0.2",
     "irc": "^0.5.2",
     "node-irc": "^0.0.5",
     "typescript": "^4.8.4"
@@ -13,7 +15,7 @@
   "devDependencies": {},
   "scripts": {
     "run": "node index.js",
-    "start": "tsc && node index.js",
+    "start": "tsc && node dist/index.js",
     "build": "tsc"
   },
   "author": "",
